@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Portfolio Tracker</h1>
+        
+        <div class="input-section">
+            <label for="investorName">Investor Name:</label>
+            <input type="text" id="investorName" placeholder="Enter your name">
+            
+            <label for="walletAddress">Wallet Address (Sepolia Testnet):</label>
+            <input type="text" id="walletAddress" placeholder="e.g., 0x123...">
+            
+            <button onclick="updatePortfolio()">Update Now</button>
+        </div>
+        
+        <div id="portfolioDisplay" class="hidden">
+            <h2>Portfolio for: <span id="nameDisplay"></span></h2>
+            
+            <table id="portfolioTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Balance</th>
+                        <th>Price (USD)</th>
+                        <th>Value (USD)</th>
+                        <th>% Allocation</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"><strong>Total Value:</strong></td>
+                        <td id="totalValue">$0.00</td>
+                        <td>100%</td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            <p><strong>Last Updated:</strong> <span id="lastUpdate"></span></p>
+        </div>
+        
+        <canvas id="allocationChart" width="400" height="400"></canvas>
+        
+        <h3>Portfolio Performance Over Time</h3>
+        <canvas id="performanceChart" width="600" height="300"></canvas>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
