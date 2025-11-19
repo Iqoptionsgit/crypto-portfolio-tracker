@@ -1,10 +1,13 @@
-const ETHERSCAN_API_KEY = 'C3MWN5VX314YSB2JUSNQSX9CBNG1MJ1BP6'; // Your Etherscan key here
+const ETHERSCAN_API_KEY = 'STA7FYZ36UXRCN71B717V1N92NZ8ME969U'; // Replace with your real key
 const ASSETS = [
     { name: 'ETH', id: 'ethereum', contract: '', decimals: 18 },
     { name: 'USDC', id: 'usd-coin', contract: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', decimals: 6 }
 ];
 let historicalData = [];
 let assetValues = []; // For charts
+
+const CHAIN_ID = 11155111; // Sepolia
+const BASE_URL = 'https://api.etherscan.io/v2/api'; // V2 unified endpoint
 
 setInterval(updatePortfolio, 14400000); // Every 4 hours
 
@@ -38,15 +41,27 @@ async function updatePortfolio() {
             let balance = 0;
             let url;
             if (asset.contract === '') {
-                url = `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${ETHERSCAN_API_KEY}`;
+                // ETH balance (V2: action=balance)
+                url = `${BASE_URL}?chainid=${CHAIN_ID}&action=balance&address=${address}&apikey=${ETHERSCAN_API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                balance = parseFloat(data.result) / Math.pow(10, asset.decimals);
+                if (data.status === '1') {
+                    balance = parseFloat(data.result) / Math.pow(10, asset.decimals);
+                } else {
+                    console.error('ETH API Error:', data.message);
+                    continue; // Skip on error
+                }
             } else {
-                url = `https://api-sepolia.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${asset.contract}&address=${address}&tag=latest&apikey=${ETHERSCAN_API_KEY}`;
+                // Token balance (V2: action=tokenbalance)
+                url = `${BASE_URL}?chainid=${CHAIN_ID}&action=tokenbalance&address=${address}&contractaddress=${asset.contract}&apikey=${ETHERSCAN_API_KEY}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                balance = parseFloat(data.result) / Math.pow(10, asset.decimals);
+                if (data.status === '1') {
+                    balance = parseFloat(data.result) / Math.pow(10, asset.decimals);
+                } else {
+                    console.error('Token API Error:', data.message);
+                    continue; // Skip on error
+                }
             }
             
             const priceUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${asset.id}&vs_currencies=usd`;
@@ -79,13 +94,13 @@ async function updatePortfolio() {
 }
 
 function renderCharts() {
-    // Pie Chart
+    // Pie Chart (skip if no values)
     const ctxPie = document.getElementById('allocationChart').getContext('2d');
     new Chart(ctxPie, {
         type: 'pie',
         data: {
             labels: ASSETS.map(a => a.name),
-            datasets: [{ data: assetValues, backgroundColor: ['#FF6384', '#36A2EB'] }]
+            datasets: [{ data: assetValues.length > 0 ? assetValues : [0, 0], backgroundColor: ['#FF6384', '#36A2EB'] }]
         },
         options: { responsive: true, plugins: { title: { display: true, text: 'Allocation' } } }
     });
